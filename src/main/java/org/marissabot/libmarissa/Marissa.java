@@ -1,11 +1,11 @@
-package org.marissa.lib;
+package org.marissabot.libmarissa;
 
 import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.strands.channels.Channel;
 import co.paralleluniverse.strands.channels.Channels;
 import co.paralleluniverse.strands.channels.SelectAction;
-import org.marissa.lib.model.ChannelEvent;
-import org.marissa.lib.model.ControlEvent;
+import org.marissabot.libmarissa.model.ChannelEvent;
+import org.marissabot.libmarissa.model.ControlEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rocks.xmpp.core.Jid;
@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 
 import static co.paralleluniverse.strands.channels.Selector.receive;
 import static co.paralleluniverse.strands.channels.Selector.select;
-import static org.marissa.lib.XMPPChannelEventFactory.makeChannelEvent;
 
 public class Marissa {
 
@@ -66,7 +65,7 @@ public class Marissa {
                 String sender = mi.getMessage().getFrom().getResource();
 
                 if (!sender.equals(nickname)) {
-                    rxChannel.send(makeChannelEvent(mi.getMessage()));
+                    rxChannel.send(XMPPChannelEventFactory.makeChannelEvent(mi.getMessage()));
                 }
 
             } catch (SuspendExecution | InterruptedException x) {

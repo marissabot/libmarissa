@@ -1,15 +1,13 @@
-package org.marissa.lib;
+package org.marissabot.libmarissa;
 
-import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.fibers.Suspendable;
 import co.paralleluniverse.strands.Timeout;
 import co.paralleluniverse.strands.channels.Channel;
 import co.paralleluniverse.strands.channels.Channels;
 import org.junit.Before;
 import org.junit.Test;
-import org.marissa.lib.model.ChannelEvent;
+import org.marissabot.libmarissa.model.ChannelEvent;
 import rocks.xmpp.core.Jid;
-import rocks.xmpp.core.stanza.model.client.Message;
 
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;

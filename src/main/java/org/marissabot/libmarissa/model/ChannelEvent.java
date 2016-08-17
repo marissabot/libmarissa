@@ -1,4 +1,4 @@
-package org.marissa.lib.model;
+package org.marissabot.libmarissa.model;
 
 /**
  * Created by ed on 10/01/16.

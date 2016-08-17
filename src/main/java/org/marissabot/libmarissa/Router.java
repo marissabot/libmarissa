@@ -1,4 +1,4 @@
-package org.marissa.lib;
+package org.marissabot.libmarissa;
 
 import co.paralleluniverse.fibers.SuspendExecution;
 import java.util.HashMap;

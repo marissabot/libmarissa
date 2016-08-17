@@ -1,4 +1,4 @@
-package org.marissa.lib.model;
+package org.marissabot.libmarissa.model;
 
 import org.junit.Test;
 
