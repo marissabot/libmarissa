@@ -1,9 +1,11 @@
 language: java
 jdk:
-- oraclejdk8
+  - oraclejdk8
 deploy:
-  on: tags
+  provider: script
   script: "./gradlew bintrayUpload"
+  on: 
+    tags: true
 env:
   global:
   - secure: XX24M8KZq/FNfhGTeE5Ths1G6cIBWZAsERzZF54/nvg6HHx4Dk8SObiAVlBpB2ikDrfzRHPOydUH4thkjyr242b5Y2cgGEzdpAVUJ1SSpxDk/nAmdWQNjhpSmFzY8rkxR6eZFsvPEdG/XrfDa8uTIHtVZmsZkt3mhqsw5gfQyYgK4tdlZ7sd2RjdWRfZFJjT10FzDbif/oCM+o5k89S5AIkNgr7Mv9I45FGc04e5cQdTj79KzYS76NgJY5km6YifTw/X5iQ40uAyreWqhpV2XyI2j/x9En1WoDNwwyUnVWN0JlNbtb4uvPbha/Tqtjezfr9QehXpmN7wUEuLK+XX13hbEu0zuuRBkBjrjWkuv5moZ7bm2bbqDsc0nZFe3VHB7zFe4672ZutM6d1xKTpusSXosP0Axr1xwYXoWyMsCDxqmoDHwVciKlZvN8wr/HvxA8h0/r3IQIUrud8fpZzn8TqcrCzib/VyjsMbbh1R/0FeWwojoFLcB1xg5Fkw0NXkNZiEOt9V3AzMEcK+13vFTsD+i+pUI3WVbjIDyZVzilS17BnJB6LmOQ4Nm9lqNvjEKiRxLQjpzYUkDIJjK8DdI/M+ElP8r36nsQ60ka7O1snPn2S3mla9HfYJeuG2mGlD0UkqK6joVgB8EPYhR9EzHQ8NDk7hMWS+CoLyb+OUF8w=
