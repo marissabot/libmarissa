@@ -3,7 +3,7 @@ jdk:
   - oraclejdk8
 deploy:
   provider: script
-  script: "./gradlew bintrayUpload"
+  script: "gradle bintrayUpload"
   on: 
     tags: true
 env:
