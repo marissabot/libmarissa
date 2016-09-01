@@ -2,13 +2,11 @@ package org.marissabot.libmarissa;
 
 import org.junit.Test;
 import org.marissabot.libmarissa.model.ChannelEvent;
-import rocks.xmpp.core.stanza.model.client.Message;
+import rocks.xmpp.core.stanza.model.Message;
+
 
 import static org.junit.Assert.*;
 
-/**
- * Created by ed on 10/01/16.
- */
 public class XMPPChannelEventFactoryTest {
 
     @Test

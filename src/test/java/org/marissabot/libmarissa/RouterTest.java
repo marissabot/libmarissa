@@ -7,7 +7,8 @@ import co.paralleluniverse.strands.channels.Channels;
 import org.junit.Before;
 import org.junit.Test;
 import org.marissabot.libmarissa.model.ChannelEvent;
-import rocks.xmpp.core.Jid;
+import rocks.xmpp.addr.Jid;
+
 
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -24,7 +25,7 @@ public class RouterTest {
     @Before
     public void setUp() throws Exception {
         r = new Router(Pattern.quote("@Mars"));
-        defaultTimeout = new Timeout(3000, TimeUnit.MILLISECONDS);
+        defaultTimeout = new Timeout(5, TimeUnit.SECONDS);
         dummy = Channels.newChannel(0);
     }
 
@@ -37,7 +38,7 @@ public class RouterTest {
         r.on("image\\s+me\\s+ninjas", (request, o) -> channel.send("testOn"));
         r.on("some other stuff", (request, c) -> fail("incorrect handler triggered"));
 
-        r.triggerHandlersForMessageText("@Mars image me ninjas", new Response(Jid.valueOf("abc@abc.com"), dummy));
+        r.triggerHandlersForMessageText("@Mars image me ninjas", new Response(Jid.of("abc@abc.com"), dummy));
 
         String result;
         int recv = 0;
@@ -64,7 +65,7 @@ public class RouterTest {
         r.whenContains(".*turtles.*", (request, o) -> channel.send("done"));
         r.on("some other stuff", (request, c) -> fail("incorrect handler triggered"));
 
-        r.triggerHandlersForMessageText("the world loves some turtles now and again", new Response(Jid.valueOf("abc@abc.com"), dummy));
+        r.triggerHandlersForMessageText("the world loves some turtles now and again", new Response(Jid.of("abc@abc.com"), dummy));
 
         String result;
         int recv = 0;

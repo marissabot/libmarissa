@@ -1,7 +1,7 @@
 package org.marissabot.libmarissa;
 
 import org.marissabot.libmarissa.model.ChannelEvent;
-import rocks.xmpp.core.stanza.model.client.Message;
+import rocks.xmpp.core.stanza.model.Message;
 
 /**
  * Created by ed on 10/01/16.

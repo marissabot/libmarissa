@@ -4,8 +4,9 @@ import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.fibers.Suspendable;
 import co.paralleluniverse.strands.channels.Channel;
 import org.marissabot.libmarissa.model.ChannelEvent;
-import rocks.xmpp.core.Jid;
-import rocks.xmpp.core.stanza.model.client.Message;
+import rocks.xmpp.addr.Jid;
+import rocks.xmpp.core.stanza.model.Message;
+
 
 public class Response {
 

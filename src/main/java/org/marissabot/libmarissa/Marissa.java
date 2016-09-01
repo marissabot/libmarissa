@@ -8,23 +8,24 @@ import org.marissabot.libmarissa.model.ChannelEvent;
 import org.marissabot.libmarissa.model.ControlEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rocks.xmpp.core.Jid;
+
+import rocks.xmpp.addr.Jid;
 import rocks.xmpp.core.XmppException;
-import rocks.xmpp.core.session.NoResponseException;
-import rocks.xmpp.core.session.XmppSession;
-import rocks.xmpp.core.session.XmppSessionConfiguration;
-import rocks.xmpp.core.stanza.MessageListener;
-import rocks.xmpp.core.stanza.model.client.Message;
-import rocks.xmpp.core.stanza.model.client.Presence;
+import rocks.xmpp.core.session.*;
+import rocks.xmpp.core.stanza.MessageEvent;
+import rocks.xmpp.core.stanza.model.Message;
+import rocks.xmpp.core.stanza.model.Presence;
 import rocks.xmpp.extensions.muc.ChatRoom;
 import rocks.xmpp.extensions.muc.ChatService;
 import rocks.xmpp.extensions.muc.MultiUserChatManager;
 import rocks.xmpp.extensions.muc.Occupant;
-import rocks.xmpp.extensions.muc.model.History;
+import rocks.xmpp.extensions.muc.model.DiscussionHistory;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static co.paralleluniverse.strands.channels.Selector.receive;
@@ -39,13 +40,13 @@ public class Marissa {
     private final List<String> rooms;
     private final Map<String, ChatRoom> joinedRooms;
 
-    private XmppSession xmppSession;
+    private XmppClient xmppClient;
     private Channel<ChannelEvent> rxChannel  = Channels.newChannel(0);
     private Channel<ChannelEvent> txChannel  = Channels.newChannel(0);
     private Channel<ChannelEvent> ctlChannel = Channels.newChannel(0);
 
     private final Logger log = LoggerFactory.getLogger(Marissa.class);
-    private final MessageListener listener;
+    private final Consumer<MessageEvent> listener;
 
     public Marissa(String username, String password, String nickname, final List<String> joinRooms) {
 
@@ -99,11 +100,11 @@ public class Marissa {
 
         try {
 
-            if (xmppSession.isConnected()) {
-                xmppSession.send(new Presence(Presence.Type.UNAVAILABLE));
+            if (xmppClient.isConnected()) {
+                xmppClient.send(new Presence(Presence.Type.UNAVAILABLE));
             }
 
-            xmppSession.close();
+            xmppClient.close();
 
         } catch (XmppException e) {
             log.error("failed to die cleanly", e);
@@ -113,8 +114,8 @@ public class Marissa {
 
     private void joinRooms(final List<String> joinRooms) throws XmppException {
 
-        MultiUserChatManager m = xmppSession.getManager(MultiUserChatManager.class);
-        ChatService chatService = m.createChatService(Jid.valueOf("conf.hipchat.com"));
+        MultiUserChatManager m = xmppClient.getManager(MultiUserChatManager.class);
+        ChatService chatService = m.createChatService(Jid.of("conf.hipchat.com"));
 
         // leave any rooms we're already in
 
@@ -136,8 +137,9 @@ public class Marissa {
             cr.addInboundMessageListener(listener);
 
             try {
-                cr.enter(nickname, History.forMaxMessages(0));
-            } catch (NoResponseException e) {
+                Future<Presence> res = cr.enter(nickname, DiscussionHistory.forMaxMessages(0));
+                Presence p = res.get();
+            } catch (Exception e) {
                 log.error("couldn't connect to room '" + room + "'", e);
                 throw new IllegalArgumentException("couldn't join room '"+room+"'", e);
             }
@@ -150,13 +152,18 @@ public class Marissa {
     public void activate(final Router router) throws XmppException, InterruptedException, SuspendExecution {
 
         // connect to xmpp
+        TcpConnectionConfiguration tcpConfiguration = TcpConnectionConfiguration.builder()
+                .hostname("chat.hipchat.com")
+                .port(5222)
+                .secure(true)
+                .build();
+        xmppClient = XmppClient.create("chat.hipchat.com", tcpConfiguration);
 
-        XmppSessionConfiguration configuration = XmppSessionConfiguration.builder().build();
+        xmppClient.connect();
+        xmppClient.login(username, password);
 
-        xmppSession = new XmppSession("chat.hipchat.com", configuration);
-        xmppSession.connect();
-        xmppSession.login(username, password);
-        xmppSession.send(new Presence());
+
+        xmppClient.send(new Presence(Presence.Show.CHAT));
 
         // join the rooms
 
@@ -177,7 +184,7 @@ public class Marissa {
 
         // reconnect listener
 
-        xmppSession.addSessionStatusListener(e -> {
+        xmppClient.addSessionStatusListener(e -> {
 
             if (e.getStatus() == XmppSession.Status.AUTHENTICATED) {
 
