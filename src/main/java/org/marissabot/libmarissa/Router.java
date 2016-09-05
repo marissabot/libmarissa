@@ -4,6 +4,8 @@ import co.paralleluniverse.fibers.SuspendExecution;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.marissabot.libmarissa.model.Context;
 import org.slf4j.LoggerFactory;
 
 public class Router {
@@ -38,18 +40,18 @@ public class Router {
         routingTable.put(Pattern.compile(pattern), routingEventListener);
     }
 
-    protected void triggerHandlersForMessageText(final String sentText, final Response useResponse)
+    protected void triggerHandlersForMessageText(final Context context, final String sentText, final Response useResponse)
     {
         routingTable.keySet().stream()
                 .filter(key -> key.matcher(sentText).matches())
-                .forEach(key -> fireEventAsync(key, sentText, useResponse));
+                .forEach(key -> fireEventAsync(context, key, sentText, useResponse));
     }
 
-    private void fireEventAsync(final Pattern key, final String request, Response useResponse)
+    private void fireEventAsync(final Context context, final Pattern key, final String request, Response useResponse)
     {
         new Thread(() -> {
             try {
-                Router.this.routingTable.get(key).routingEvent(request, useResponse);
+                Router.this.routingTable.get(key).routingEvent(context, request, useResponse);
             } catch (InterruptedException | SuspendExecution e) {
                 LoggerFactory.getLogger(Router.class).error("this shouldn't happen", e);
             }

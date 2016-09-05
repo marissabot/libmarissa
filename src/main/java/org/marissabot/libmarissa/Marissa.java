@@ -4,7 +4,9 @@ import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.strands.channels.Channel;
 import co.paralleluniverse.strands.channels.Channels;
 import co.paralleluniverse.strands.channels.SelectAction;
+import org.marissabot.libmarissa.model.Address;
 import org.marissabot.libmarissa.model.ChannelEvent;
+import org.marissabot.libmarissa.model.Context;
 import org.marissabot.libmarissa.model.ControlEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,7 @@ import rocks.xmpp.extensions.muc.model.DiscussionHistory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -61,12 +64,12 @@ public class Marissa {
 
                 if(mi == null) {
                     return;
-                }
+                } else if (mi.getMessage().getType() == Message.Type.GROUPCHAT) {
+                    String userInChannel = mi.getMessage().getFrom().getResource();
 
-                String sender = mi.getMessage().getFrom().getResource();
-
-                if (!sender.equals(nickname)) {
-                    rxChannel.send(XMPPChannelEventFactory.makeChannelEvent(mi.getMessage()));
+                    if (!userInChannel.equals(nickname)) {
+                        rxChannel.send(XMPPChannelEventFactory.makeChannelEvent(mi.getMessage()));
+                    }
                 }
 
             } catch (SuspendExecution | InterruptedException x) {
@@ -176,8 +179,20 @@ public class Marissa {
                 String peeps = String.join(", ", cr.getOccupants().stream()
                     .filter(x -> !x.isSelf())
                     .map(Occupant::getNick)
+                    .map(nick -> {
+                        String[] nom = nick.trim().split("\\s+");
+                        if (nom.length==2&&!nom[0].trim().isEmpty())
+                        {
+                            return nom[0];
+                        } else {
+                            return nick;
+                        }
+                    })
                     .collect(Collectors.toList()));
-                cr.sendMessage("Hey " + peeps);
+
+                String[] greetings = { "Hello", "Hey", "Hi" };
+
+                cr.sendMessage(greetings[new Random(System.currentTimeMillis()).nextInt(greetings.length)] + " " + peeps);
             });
 
         log.info("Joined room(s) " + String.join(", ", joinedRooms.keySet()));
@@ -240,7 +255,12 @@ public class Marissa {
 
                 switch (sa.index()) {
                     case 0:
-                        router.triggerHandlersForMessageText(message.getBody(), new Response(message.getFrom(), txChannel));
+                        ChatRoom room = joinedRooms.get(message.getFrom().getLocal());
+                        Occupant userJid = room.getOccupant(message.getFrom().getResource());
+                        Address user = new Address(userJid.getJid().toString(), userJid.getNick());
+                        Address roomAddress = new Address(message.getFrom().asBareJid().toString(), room.getNick());
+                        Context c = new Context(roomAddress, user);
+                        router.triggerHandlersForMessageText(c, message.getBody(), new Response(message.getFrom(), txChannel));
                         break;
                     case 1:
                         ChatRoom cr = joinedRooms.get(message.getTo().getLocal());

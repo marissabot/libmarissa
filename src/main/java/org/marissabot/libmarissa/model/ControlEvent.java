@@ -1,8 +1,5 @@
 package org.marissabot.libmarissa.model;
 
-/**
- * Created by ed on 10/01/16.
- */
 public class ControlEvent {
 
     public enum Type {
