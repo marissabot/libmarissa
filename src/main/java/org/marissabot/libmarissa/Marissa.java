@@ -257,7 +257,7 @@ public class Marissa {
                     case 0:
                         ChatRoom room = joinedRooms.get(message.getFrom().getLocal());
                         Occupant userJid = room.getOccupant(message.getFrom().getResource());
-                        Address user = new Address(userJid.getJid().toString(), userJid.getNick());
+                        Address user = new Address(userJid.getJid().asBareJid().toString(), userJid.getNick());
                         Address roomAddress = new Address(message.getFrom().asBareJid().toString(), room.getNick());
                         Context c = new Context(roomAddress, user);
                         router.triggerHandlersForMessageText(c, message.getBody(), new Response(message.getFrom(), txChannel));
