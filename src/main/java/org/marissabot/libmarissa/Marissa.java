@@ -251,25 +251,30 @@ public class Marissa {
 
             } else if (ChannelEvent.EventType.XMPP.equals(evt.getEventType())) {
 
-                Message message = (Message)evt.getPayload();
+                try {
 
-                switch (sa.index()) {
-                    case 0:
-                        ChatRoom room = joinedRooms.get(message.getFrom().getLocal());
-                        Occupant userJid = room.getOccupant(message.getFrom().getResource());
-                        Address user = new Address(userJid.getJid().asBareJid().toString(), userJid.getNick());
-                        Address roomAddress = new Address(message.getFrom().asBareJid().toString(), room.getNick());
-                        Context c = new Context(roomAddress, user);
-                        router.triggerHandlersForMessageText(c, message.getBody(), new Response(message.getFrom(), txChannel));
-                        break;
-                    case 1:
-                        ChatRoom cr = joinedRooms.get(message.getTo().getLocal());
-                        if (cr != null) {
-                            cr.sendMessage(message.getBody());
-                        } else {
-                            log.error("chatroom isn't joined; " + message.getTo().getLocal());
-                        }
-                        break;
+                    Message message = (Message)evt.getPayload();
+
+                    switch (sa.index()) {
+                        case 0:
+                            ChatRoom room = joinedRooms.get(message.getFrom().getLocal());
+                            Occupant userJid = room.getOccupant(message.getFrom().getResource());
+                            Address user = new Address(userJid.getJid().asBareJid().toString(), userJid.getNick());
+                            Address roomAddress = new Address(message.getFrom().asBareJid().toString(), room.getNick());
+                            Context c = new Context(roomAddress, user);
+                            router.triggerHandlersForMessageText(c, message.getBody(), new Response(message.getFrom(), txChannel));
+                            break;
+                        case 1:
+                            ChatRoom cr = joinedRooms.get(message.getTo().getLocal());
+                            if (cr != null) {
+                                cr.sendMessage(message.getBody());
+                            } else {
+                                log.error("chatroom isn't joined; " + message.getTo().getLocal());
+                            }
+                            break;
+                    }
+                } catch (Exception e) {
+                    log.error("could not process XMPP event", e);
                 }
             }
         }
