@@ -42,9 +42,10 @@ public class Router {
 
     protected void triggerHandlersForMessageText(final Context context, final String sentText, final Response useResponse)
     {
+        String trimmed = sentText.trim();
         routingTable.keySet().stream()
-                .filter(key -> key.matcher(sentText).matches())
-                .forEach(key -> fireEventAsync(context, key, sentText, useResponse));
+                .filter(key -> key.matcher(trimmed).matches())
+                .forEach(key -> fireEventAsync(context, key, trimmed, useResponse));
     }
 
     private void fireEventAsync(final Context context, final Pattern key, final String request, Response useResponse)
