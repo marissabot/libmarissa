@@ -1,33 +1,33 @@
 package org.marissabot.libmarissa;
 
 import co.paralleluniverse.fibers.SuspendExecution;
-import java.util.HashMap;
+
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.marissabot.libmarissa.model.Context;
+
 import org.slf4j.LoggerFactory;
 
 public class Router {
 
-    private final Map<Pattern, RoutingEventListener> routingTable = new HashMap<>();
-    private Pattern baseName;
+    private final Map<Pattern, RoutingEventListener> routingTable = new LinkedHashMap<>();
+    private final Pattern baseName;
+    private final boolean matchAll;
 
-    public Router(String baseName)
+    public Router(String baseName, boolean matchAll)
     {
         if (baseName==null) {
             throw new IllegalArgumentException("Base name can't be null");
         }
 
         this.baseName=Pattern.compile(baseName+"\\s+");
+        this.matchAll=matchAll;
     }
 
     public void on(String pattern, RoutingEventListener routingEventListener)
     {
-        if (routingEventListener == null) {
-            throw new IllegalArgumentException("response handler can't be null");
-        }
-
         whenContains(baseName.pattern().concat(pattern), routingEventListener);
     }
 
@@ -43,9 +43,18 @@ public class Router {
     protected void triggerHandlersForMessageText(final Context context, final String sentText, final Response useResponse)
     {
         String trimmed = sentText.trim();
-        routingTable.keySet().stream()
-                .filter(key -> key.matcher(trimmed).matches())
-                .forEach(key -> fireEventAsync(context, key, trimmed, useResponse));
+
+        for (Map.Entry<Pattern, RoutingEventListener> entry : routingTable.entrySet()) {
+            Pattern key = entry.getKey();
+
+            if (key.matcher(trimmed).matches()) {
+                fireEventAsync(context, key, trimmed, useResponse);
+
+                if (!this.matchAll) {
+                    break;
+                }
+            }
+        }
     }
 
     private void fireEventAsync(final Context context, final Pattern key, final String request, Response useResponse)
@@ -59,4 +68,18 @@ public class Router {
         }).start();
     }
 
+    public Map<Pattern, RoutingEventListener> getRoutingTable()
+    {
+        return this.routingTable;
+    }
+
+    public Pattern getBaseName()
+    {
+        return this.baseName;
+    }
+
+    public boolean getMatchAll()
+    {
+        return this.matchAll;
+    }
 }
